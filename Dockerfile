@@ -1,21 +1,19 @@
-FROM registry.cn-qingdao.aliyuncs.com/dataease/fabric8-java-alpine-openjdk8-jre:edge-chromium
+FROM ubuntu:18.04
 
-ARG IMAGE_TAG
+RUN apt-get update --fix-missing
+RUN apt-get install -y openjdk-8-jre-headless
+RUN apt-get install -y build-essential
+RUN apt-get install -y unzip
+RUN apt-get install -y chromium-browser chromium-chromedriver
 
-RUN mkdir -p /opt/apps /opt/dataease/data/feature/full /opt/dataease/drivers
+RUN mkdir -p /opt/apps /opt/dataease/data/feature/full /opt/dataease/drivers /opt/dataease/data/kettle /opt/dataease/static-resource /opt/dataease/custom-drivers /opt/dataease/plugins/thirdpart /opt/dataease/logs
 
 ADD mapFiles/* /opt/dataease/data/feature/full/
 
 ADD drivers/* /opt/dataease/drivers/
 
-ADD backend/target/backend-$IMAGE_TAG.jar /opt/apps
+COPY backend/target/*.jar /opt/apps
 
-ENV JAVA_APP_JAR=/opt/apps/backend-$IMAGE_TAG.jar
+WORKDIR /opt/apps
 
-ENV AB_OFF=true
-
-ENV JAVA_OPTIONS=-Dfile.encoding=utf-8
-
-HEALTHCHECK --interval=15s --timeout=5s --retries=20 --start-period=30s CMD curl -f 127.0.0.1:8081
-
-CMD ["/deployments/run-java.sh"]
+CMD ["/bin/sh", "-c", "java -jar *.jar"]
